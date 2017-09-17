@@ -18,3 +18,6 @@ c.NotebookApp.password = u'sha1:67c9e60bb8b6:9ffede0.....' #le password qu'on a 
 c.NotebookApp.open_browser = False
 c.NotebookApp.port =8888 #ce que on veut `
 6. redémarrer le jupyter notebook, maintenant on peut ouvrir http://serverIp:8888 dans un autre ordinateur.
+
+## Problems
+J'ai constaté que le serveur demande seulement une fois le password pour chaque client(l'ordinateur). 
