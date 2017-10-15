@@ -17,6 +17,9 @@
 * mkdir savoir-jupyter
 * git init
 * git add readme.md configurer_jupyter_serveur.md
+* git add -A #stages All;
+* git add . #Stages New & Modified But Without Deleted
+* git add -u #Stages Modified & Deleted But Without New
 * git commit -m "new file and rename file"
 * git status
 
@@ -63,6 +66,8 @@
 * git push -u origin master # -f 强制
 * git push origin master
 * git remote | git remote -v #查看远程库
+* git pull #把github的库的内容更新下来
+* 
 
 > 参与Github的某个开源项目
 * 点“Fork”就在自己的账号下克隆了一个bootstrap仓库，然后，从自己的账号下clone
