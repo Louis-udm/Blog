@@ -67,9 +67,19 @@
 * git push origin master
 * git remote | git remote -v #查看远程库
 * git pull #把github的库的内容更新下来
-* 
+* <b>通常的步骤：在github上建好一个项目, 本地根目录(要存放项目目录的上级目录)下运行git clone ....</b>
 
 > 参与Github的某个开源项目
 * 点“Fork”就在自己的账号下克隆了一个bootstrap仓库，然后，从自己的账号下clone
 * git clone git@github.com:Louis-udm/bootstrap.git
 * 在GitHub上发起一个pull request，让作者接受我的修改
+
+> 如何从原始作者的项目仓库中更新fork过的项目：
+项目目录下：
+* git remote -v
+* git remote add upstream https://github.com/placaille/ift-labo.git  添加一个将被同步给 fork 远程的上游仓库
+* git remote -v
+* git fetch upstream 从上游仓库 fetch 分支和提交点，传送到本地，并会被存储在一个本地分支 upstream/master 
+* git checkout master 切换到本地主分支(如果不在的话) 
+* git merge upstream/master 把 upstream/master 分支合并到本地 master 上，这样就完成了同步，并且不会丢掉本地修改的内容。
+* 如果想更新到 GitHub 的 fork 上，直接 git push origin master
