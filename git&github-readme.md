@@ -1,21 +1,10 @@
 # Git & Github
 ***
 > Louis
-## reference:
-> https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/001375840038939c291467cc7c747b1810aab2fb8863508000
-> http://www.runoob.com/w3cnote/git-guide.html
-> https://www.zhihu.com/question/20070065
 
 
-## git client
-* git for mac : https://sourceforge.net/projects/git-osx-installer/* 
-* git gui for mac :https://desktop.github.com
+> 日常操作quotidien:
 
-* git --version
-* git status* 
-
-* mkdir savoir-jupyter
-* git init
 * git add readme.md configurer_jupyter_serveur.md
 * git add -A #stages All;
 * git add . #Stages New & Modified But Without Deleted
@@ -23,11 +12,30 @@
 * git commit -m "new file and rename file"
 * git status
 
+* rm readme.md # 不小心删了
+* git checkout readme.md
+
+
+## git client
+* git for mac : https://sourceforge.net/projects/git-osx-installer/* 
+* git gui for mac :https://desktop.github.com
+* git --version
+
+> 建立项目repository
+
+* mkdir savoir-jupyter
+* git init
+
 * git log
 * git reflog
 
-* rm readme.md # 不小心删了
-* git checkout readme.md
+> 清除repository
+
+* find . -name ".git" | xargs rm -Rf 
+* #删除文件夹下的所有 .git 文件, 
+* #git init 重新初始化新建的git仓库
+* #接着add，commit等操作即可
+* 
 
 > 创建分支
 * git checkout -b dev
@@ -68,7 +76,7 @@
 * git remote | git remote -v #查看远程库
 * git pull #把github的库的内容更新下来
 * <b>通常的步骤：在github上建好一个项目, 本地根目录(要存放项目目录的上级目录)下运行git clone ....</b>
-* git remote remove origin #取消本地目录下关联的远程库：
+* git remote remove origin #取消本地目录下关联的远程库
 
 
 > 参与Github的某个开源项目
@@ -78,13 +86,16 @@
 
 > 如何从原始作者的项目仓库中更新fork过的项目：
 
-项目目录下：
-* git remote -v
-
-添加一个将被同步给 fork 远程的上游仓库
-* git remote add upstream https://github.com/placaille/ift-labo.git  
-* git remote -v
+* git remote -v #项目目录下
+* git remote add upstream https://github.com/placaille/ift-labo.git   #添加一个将被同步给 fork 远程的上游仓库
+* git remote -v #查看添加成功了否
 * git fetch upstream #从上游仓库 fetch 分支和提交点，传送到本地，并会被存储在一个本地分支 upstream/master 
 * git checkout master 切换到本地主分支(如果不在的话) 
 * git merge upstream/master 把 upstream/master 分支合并到本地 master 上，这样就完成了同步，并且不会丢掉本地修改的内容。
 * 如果想更新到 GitHub 的 fork 上，直接 git push origin master
+
+## reference:
+> https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/001375840038939c291467cc7c747b1810aab2fb8863508000
+> http://www.runoob.com/w3cnote/git-guide.html
+> https://www.zhihu.com/question/20070065
+
