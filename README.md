@@ -1,6 +1,6 @@
 # Blog d'informatique
 
-> [Louis' home page](https://https://louis-udm.github.io)
+> [Louis' home page](https://louis-udm.github.io)
 
 Pour noter les connaissances d'informatique.
 
