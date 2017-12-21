@@ -6,7 +6,7 @@ Pour noter les connaissances d'informatique.
 
 ## Liste de projets
 
-- [Devoirs de Maîtrise en informatique à UdeM](https://github.com/Louis-udm/Devoirs-Maitrise-UdeM)
+- [des devoirs de Maîtrise en Informatique à l'UdeM](https://github.com/Louis-udm/Devoirs-Maitrise-UdeM)
 - [Implementer l'algorithme AdaBoost dans Mathematica, et comparer la performance par Random Forest](https://github.com/Louis-udm/Devoirs-Maitrise-UdeM/tree/master/Algorithmes/AdaBoost)
 - [Introduction de l'algorithme Apriori](https://github.com/Louis-udm/Devoirs-Maitrise-UdeM/tree/master/Projet%20de%20IFT6141-Reconnaissance%20des%20formes)
 - [Comparer 3 algorithmes -- Reseau à convolution, Bayes naïf et SVM en utilisant MNIST et Cifar-10](https://github.com/Louis-udm/Devoirs-Maitrise-UdeM/tree/master/Projet%20de%20IFT6390-Fondements%20de%20l'apprentissage%20machine)
