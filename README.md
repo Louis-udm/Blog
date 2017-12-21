@@ -14,7 +14,7 @@ Pour noter les connaissances d'informatique.
 6. [Les demonstrations de fondements d'apprentissage machine à l'UdeM](https://github.com/Louis-udm/ift-labo)
 
 ## Liste d'articles
-4. [git et github commandes](https://github.com/Louis-udm/Blog/blob/master/git-and-github-readme.md)
+1. [git et github commandes](https://github.com/Louis-udm/Blog/blob/master/git-and-github-readme.md)
 4. [Configurer un serveur de jupyter](https://github.com/Louis-udm/Blog/blob/master/jupyter-configur_serveur.md)
 4. [Apprendre jupyter](https://github.com/Louis-udm/Blog/blob/master/jupyter-helloworld.ipynb)
 4. [Raccourcis de jupyter](https://github.com/Louis-udm/Blog/blob/master/jupyter-shortcutkeys.md)
