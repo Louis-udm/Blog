@@ -1,11 +1,10 @@
 # Blog d'informatique
 
-> Louis
-***
+> [Louis' home page](https://https://louis-udm.github.io)
+
 Pour noter les connaissances d'informatique.
 
-- [Home page](https://https://louis-udm.github.io)
-- 
+
 ## Liste
 - [git et github commandes](https://github.com/Louis-udm/Blog/blob/master/git-and-github-readme.md)
 - [Configurer un serveur de jupyter](https://github.com/Louis-udm/Blog/blob/master/jupyter-configur_serveur.md)
