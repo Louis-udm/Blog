@@ -1,6 +1,6 @@
-#### Linux command
+# Linux command
 
-* [xargs](http://blog.csdn.net/chenzrcd/article/details/50186881): （1）将前一个命令的标准输出传递给下一个命令，作为它的参数，xargs的默认命令是echo，空格是默认定界符（2）将多行输入转换为单行
+### [xargs](http://blog.csdn.net/chenzrcd/article/details/50186881): （1）将前一个命令的标准输出传递给下一个命令，作为它的参数，xargs的默认命令是echo，空格是默认定界符（2）将多行输入转换为单行
 -n： 指定一次处理的参数个数
 -d： 自定义参数界定符
 -p： 询问是否运行 later command 参数
@@ -11,9 +11,9 @@ ls -exec du
 
 将所有文件重命名，逐项处理每个参数 ls *.txt |xargs -t -i mv {} {}.bak
 
-* 和xargs不同，exec参数是一个一个传递的，并且不需要使用|
+### 和xargs不同，exec参数是一个一个传递的，并且不需要使用|
 
-find . -name "*.py" -exec grep -i 'function' {} \;
+find . -name "*.py" -exec grep -i 'function' {} \;  #grep -i忽略字母大小写
 
 find . -name '*.txt' -exec du {} \;
 
