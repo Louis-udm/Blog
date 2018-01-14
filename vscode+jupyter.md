@@ -12,7 +12,11 @@
 
 ## command:
 1. cmd+shift+p, >python: select interpreter #choisir version de python
-2.cmd+shift+O #tout les symbols
+2. cmd+shift+O #tout les symbols
+3. ctrl+cliquer function/variable/symboles
+4. rename symbole: sur le symbole, F2
+5. debug: cliquer la gauche du numero de ligne.
+6. cacher le menu: view->changer le menu, pour re afficher: alt
 
 ## jupyter dans VS Code:
 1. installer la plugin Jupyter de  Don Jayamanne
@@ -36,3 +40,7 @@ plt.plot(x, np.sin(x))
 plt.show()
 
 6. cliquer "Run Cell"
+
+## reference:
+1. [vscode](https://code.visualstudio.com/docs?start=true)
+2. [python on vs code](https://code.visualstudio.com/docs/languages/python)
