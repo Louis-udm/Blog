@@ -5,9 +5,9 @@
 > 14 jan. 2018
 
 ## raccourci
-[shortcuts for mac os](https://www.jianshu.com/p/99ae6f886da4)
-[shortcuts frequent](https://www.zhihu.com/question/37623310)
-[vs code shortcuts for mac os](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf)
+[shortcuts for mac os](https://www.jianshu.com/p/99ae6f886da4) </br>
+[shortcuts frequent](https://www.zhihu.com/question/37623310) </br>
+[shortcuts pdf for mac os](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf) </br>
 
 ## installer des plugins:
 1. Python (microsoft)
@@ -21,6 +21,8 @@
 4. markdown preview, utilise: cmd+k v
 4. git history
 4. LaTex Workshop, cmd+shift+p -> latex workshop view latex in new tab
+4. Path Intellisense, utilise: quand on tape "./../"
+4. output colorizer
 
 ## command:
 1. cmd+shift+p, >python: select interpreter #choisir version de python
@@ -62,7 +64,7 @@ plt.show()
 
 ## topper
 menu->code->preference->raccoucis, add:
-    { "key": "ctrl+alt+i",      "command": "extension.addTopHeader",
+    { "key": "ctrl+alt+i",      "command": "topper.addTopHeader",
         "when": "editorTextFocus"}
 
 ## reference:

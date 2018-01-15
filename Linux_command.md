@@ -4,26 +4,9 @@
 
 > 14 jan. 2017
 
+## 1.文本处理相关命令
+
 ### [Raccourci de VI](http://wiki.jikexueyuan.com/project/learn-linux-step-by-step/vim-and-vi-common-commands.html)
-
-### [xargs](http://blog.csdn.net/chenzrcd/article/details/50186881): 
-（1）将前一个命令的标准输出传递给下一个命令，作为它的参数，xargs的默认命令是echo，空格是默认定界符
-（2）将多行输入转换为单行
-```
--n： 指定一次处理的参数个数
--d： 自定义参数界定符
--p： 询问是否运行 later command 参数
--t ： 表示先打印命令，然后再执行
--i ： 逐项处理
-```
-将所有文件重命名，逐项处理每个参数 ls *.txt |xargs -t -i mv {} {}.bak
-
-### exec: 和xargs不同，exec参数是一个一个传递的，并且不需要使用|
-```
-ls -exec du
-find . -name "*.py" -exec grep -i 'function' {} \;  #grep -i忽略字母大小写
-find . -name '*.txt' -exec du {} \;
-```
 
 ### tr 字符串处理
 ```
@@ -38,35 +21,97 @@ echo "thissss is      a text linnnnnnne." | tr -s ' sn' #用tr压缩字符，可
 head -n 60 zola1.txt | tr ' ' '\012' | grep -i ven #\012=\n
 ```
 
-### wc -l :计算文本文件的行数
+### wc 
+-l :计算文本文件的行数 </br>
+-c :计算字数 </br>
+-c或--bytes或——chars：只显示Bytes数；</br>
 
 ### [awk的工作原理](http://man.linuxde.net/awk)
 awk 'BEGIN{ commands } pattern{ commands } END{ commands }' </br>
-第一步：执行BEGIN{ commands }语句块中的语句；</br>
+第一步：执行BEGIN{ commands }语句块中的语句；可略；</br>
 第二步：从文件或标准输入(stdin)读取一行，然后执行pattern{ commands }语句块，它逐行扫描文件，从第一行到最后一行重复这个过程，直到文件全部被读取完毕。</br>
-第三步：当读至输入流末尾时，执行END{ commands }语句块
+第三步：当读至输入流末尾时，执行END{ commands }语句块；可略 </br>
+awk中还可以使用if, for , while, do 等语句；可以定义数组等变量
 
 ```
+$ awk 'BEGIN{ i=0 } { i++ } END{ print i }' filename
 $ head -n 200 zola1.txt | tr ' ' '\012' | grep -i "∧ven" | sort | uniq -c | sort -k1,1nr | awk 'print $2' #awk只将按频率排好序的输出的第二列打印出来，第一列是计数
 $ head -n 1000 zola1.txt | tr ' ' '\012' | grep -i "∧ven" | sort | uniq -c | sort -k1,1nr | awk '$1 > 2 {print $0}' #ici la première colonne doit être supérieure à 2. 打印第一列大于2的，print $0就是打印整行
+$ seq 5 | awk 'BEGIN{ sum=0; print "总和：" } { print $1"+"; sum+=$1 } END{ print "等于"; print sum }'
+$ seq 5 |awk '$1>2 {print $1; print $1*$1}' #对产生的1~5，只打印>2的
+
+~ ~! 匹配正则表达式和不匹配正则表达式
+$ awk 'BEGIN{a="100testa";if(a ~ /^100*/){print "ok";}}'
 ```
 
-### [sed](http://wiki.jikexueyuan.com/project/learn-linux-step-by-step/regular-expression-and-its-application.html)
 
+### [sed](http://man.linuxde.net/sed)
+sed是一种流编辑器，它是文本处理中非常中的工具，能够完美的配合正则表达式使用，功能不同凡响。处理时，把当前处理的行存储在临时缓冲区中，称为“模式空间”（pattern space），接着用sed命令处理缓冲区中的内容，处理完成后，把缓冲区的内容送往屏幕。接着处理下一行，这样不断重复，直到文件末尾。文件内容并没有 改变，除非你使用重定向存储输出。Sed主要用来自动编辑一个或多个文件；简化对文件的反复操作；编写转换程序等。
 
-### du -sh ./ :查看当前目录所占空间大小 #du -sm
+sed [options] 'command' file(s)
 
-### bc -l :计算器
-
-### linux的三个输出描述文件：
+sed [-nefr] ‘动作’
 ```
-三个描述文件: 
-2 stderr  
-1 stdout 
-0 stdin
+选项与参数：
+-n:silent 模式，只将 sed 处理过的内容显示 i 出来
+-e:设置多个 sed 动作
+-f filename: 文件内记录 sed 脚本 scipt
+-r:sed 支持的扩展正则表达式语法（默认是基础正则表达式）
+-i:直接修改读取文件内容，而不是屏幕输出
+动作：n1,n2function
+n1,n2不一定存在
+
+sed替换标记
+g 表示行内全面替换。  
+p 表示打印行。  
+w 表示把行写入一个文件。  
+x 表示互换模板块中的文本和缓冲区中的文本。  
+y 表示把一个字符翻译为另外的字符（但是不用于正则表达式）
+\1 子串匹配标记
+& 已匹配字符串标记
+
+sed元字符集
+^ 匹配行开始，如：/^sed/匹配所有以sed开头的行。
+$ 匹配行结束，如：/sed$/匹配所有以sed结尾的行。
+. 匹配一个非换行符的任意字符，如：/s.d/匹配s后接一个任意字符，最后是d。
+* 匹配0个或多个字符，如：/*sed/匹配所有模板是一个或多个空格后紧跟sed的行。
+[] 匹配一个指定范围内的字符，如/[ss]ed/匹配sed和Sed。  
+[^] 匹配一个不在指定范围内的字符，如：/[^A-RT-Z]ed/匹配不包含A-R和T-Z的一个字母开头，紧跟ed的行。
+\(..\) 匹配子串，保存匹配的字符，如s/\(love\)able/\1rs，loveable被替换成lovers。
+& 保存搜索字符用来替换其他字符，如s/love/**&**/，love这成**love**。
+\< 匹配单词的开始，如:/\<love/匹配包含以love开头的单词的行。
+\> 匹配单词的结束，如/love\>/匹配包含以love结尾的单词的行。
+x\{m\} 重复字符x，m次，如：/0\{5\}/匹配包含5个0的行。
+x\{m,\} 重复字符x，至少m次，如：/0\{5,\}/匹配至少有5个0的行。
+x\{m,n\} 重复字符x，至少m次，不多于n次，如：/0\{5,10\}/匹配5~10个0的行。
+
+function:
+a：新增，a 后面接字符串，这些字符在当前的下一行显示
+c：替换，c 后面接字符串，这些字符替换 n1-n2之间的行
+d：删除，删除 n1-n2之间的行
+i：添加，i 后面接字符串，这些字符在当前的上一行显示
+p: 打印，打印 n1~n2行之间的数据
+s: 替换以关键字形式替换，并不是替换整行. sed ‘s/旧字符串/新字符串/g’’
+```
+
+exemples:
+```
+替换操作：s命令
+正则表达式 \w\+ 匹配每一个单词，使用 [&] 替换它，& 对应于之前所匹配到的单词：
+echo this is a test line | sed 's/\w\+/[&]/g'
+```
+
+### bc :bc命令是一种支持任意精度的交互执行的计算器语言
+```
+-i：强制进入交互式模式；
+-l：定义使用的标准数学库；
+-w：对POSIX bc的扩展给出警告信息；
+-q：不打印正常的GNU bc环境信息；
+-v：显示指令版本信息；
+-h：显示指令的帮助信息。
 
 exemple:
-$ find / -user bandit7 -group bandit6 2>/dev/null
+echo "sqrt(10^10)" | bc
 ```
 
 ### cat(concatenate)
@@ -81,7 +126,7 @@ $ find / -user bandit7 -group bandit6 2>/dev/null
 -T:将 Tab 按键以∧I 显示出来
 ```
 
-### nl [-bnw] 文件
+### nl [-bnw] 文件: 输出文件的同时给出行号
 ```
 选项与参数：
 -b：指定行号指定的方式，主要有两种：
@@ -139,6 +184,106 @@ tail -n :查看文件后n行
 修改文件日期(mtime,atime)
 ```
 
+### grep 
+```
+-b 在显示符合范本样式的那一行之外，并显示该行之前的内容。
+-c 计算符合范本样式的列数。
+-C<显示列数>或-<显示列数>  除了显示符合范本样式的那一列之外，并显示该列之前后的内容。
+-E 将范本样式为延伸的普通表示法来使用，意味着能使用扩展正则表达式。
+-v 反转查找
+...
+
+exemple:
+$ grep '^#' git-and-github-readme.md #查找以#开始的那一行
+$ head -n 200 zola1.txt | tr ' ' '\012' | grep -i "∧ven" | sort | uniq -c #tr将空格变为\n后, 再grep -i忽略字母大小写并查找ven开头的，然后sort排序，再uniq计数
+```
+
+### uniq 对紧挨着的一样的行进行消冗，并可计数
+```
+-c或——count：在每列旁边显示该行重复出现的次数；
+-d或--repeated：仅显示重复出现的行列；
+-f<栏位>或--skip-fields=<栏位>：忽略比较指定的栏位；
+-s<字符位置>或--skip-chars=<字符位置>：忽略比较指定的字符；
+-u或——unique：仅显示出一次的行列；
+-w<字符位置>或--check-chars=<字符位置>：指定要比较的字符。
+
+```
+
+### seq 5
+```
+产生:
+1
+2
+3
+4
+5
+```
+
+### sort 可以按照不同的数据类型来排序
+例如按数字或文字排序，排序结果也受语系编码的影响，例如有的语系字符是这么排序的 AaBbCc….建议语系使用 LANG=C
+```
+语法：sort [-fbMnrtuk]文件或输入流
+选项与参数：
+-f:忽略大小写
+-b:忽略最前面的空格
+-c：检查文件是否已经按照顺序排序；
+-i：排序时，除了040至176之间的ASCII字符外，忽略其他的字符；
+-m：将几个排序号的文件进行合并；
+-o<输出文件>：将排序后的结果存入制定的文件；
+-M:以月份(英文)来排序
+-r:反向排序
+-u:就是 uniq
+
+sort的-n、-r、-k、-t选项的使用,k以那个 field 的进行排序,n作为数字对待，r逆序,t:分隔符与-k 连用:
+FStart.CStart Modifie,FEnd.CEnd Modifier
+-------Start--------,-------End--------
+ FStart.CStart 选项  ,  FEnd.CEnd 选项
+
+$ cat /etc/passwd |sort -t ':' -k 3
+$ head -n 200 zola1.txt | tr ' ' '\012' | grep -i "∧ven" | sort | uniq -c | sort -k1,1nr #tr将空格变为\n后, 再grep -i忽略字母大小写并查找ven开头的，然后sort排序，再uniq计数, 最后根据第一列k1倒序r排序
+$ sort -t ' ' -k 1.2,1.5 -nrk 3,3 facebook.txt #域分隔符为空格，先安第一个域的第二个字母到第5个字母排序，然后按第三个域以数字方式排序，
+
+```
+
+## 2.系统命令
+
+### linux的三个输出描述文件：
+```
+三个描述文件: 
+2 stderr  
+1 stdout 
+0 stdin
+
+exemple:
+$ find / -user bandit7 -group bandit6 2>/dev/null
+```
+
+### [xargs](http://blog.csdn.net/chenzrcd/article/details/50186881): 
+（1）将前一个命令的标准输出传递给下一个命令，作为它的参数，xargs的默认命令是echo，空格是默认定界符
+（2）将多行输入转换为单行
+```
+-n： 指定一次处理的参数个数
+-d： 自定义参数界定符
+-p： 询问是否运行 later command 参数
+-t ： 表示先打印命令，然后再执行
+-i ： 逐项处理
+```
+将所有文件重命名，逐项处理每个参数 ls *.txt |xargs -t -i mv {} {}.bak
+
+### exec: 和xargs不同，exec参数是一个一个传递的，并且不需要使用|
+```
+ls -exec du
+find . -name "*.py" -exec grep -i 'function' {} \;  #grep -i忽略字母大小写
+find . -name '*.txt' -exec du {} \;
+```
+
+### du -sh ./ :查看当前目录所占空间大小 
+```
+$ du -sh ./ :查看当前目录所占空间大小 
+$ du -sh *
+$ du -sm 
+```
+
 ### jobs[-lrs]
 ```
 选项与参数：
@@ -172,76 +317,6 @@ fg +
 -U ：仅列出 Unixlike 系统的 socket 文件类型；
 -u ：后面接 username，列出该使用者相关程序所开启的文件；
 +d ：后面接目录,找出某个目录底下已经被开启的文件
-```
-
-### grep 
-```
--b 在显示符合范本样式的那一行之外，并显示该行之前的内容。
--c 计算符合范本样式的列数。
--C<显示列数>或-<显示列数>  除了显示符合范本样式的那一列之外，并显示该列之前后的内容。
--E 将范本样式为延伸的普通表示法来使用，意味着能使用扩展正则表达式。
--v 反转查找
-...
-
-exemple:
-$ grep '^#' git-and-github-readme.md #查找以#开始的那一行
-$ head -n 200 zola1.txt | tr ' ' '\012' | grep -i "∧ven" | sort | uniq -c #tr将空格变为\n后, 再grep -i忽略字母大小写并查找ven开头的，然后sort排序，再uniq计数
-```
-
-### uniq
-```
--c或——count：在每列旁边显示该行重复出现的次数；
--d或--repeated：仅显示重复出现的行列；
--f<栏位>或--skip-fields=<栏位>：忽略比较指定的栏位；
--s<字符位置>或--skip-chars=<字符位置>：忽略比较指定的字符；
--u或——unique：仅显示出一次的行列；
--w<字符位置>或--check-chars=<字符位置>：指定要比较的字符。
-
-```
-
-### sed [-nefr] ‘动作’
-```
-选项与参数：
--n:silent 模式，只将 sed 处理过的内容显示 i 出来
--e:设置多个 sed 动作
--f filename: 文件内记录 sed 脚本 scipt
--r:sed 支持的扩展正则表达式语法（默认是基础正则表达式）
--i:直接修改读取文件内容，而不是屏幕输出
-动作：n1,n2function
-n1,n2不一定存在
-function:
-a：新增，a 后面接字符串，这些字符在当前的下一行显示
-c：替换，c 后面接字符串，这些字符替换 n1-n2之间的行
-d：删除，删除 n1-n2之间的行
-i：添加，i 后面接字符串，这些字符在当前的上一行显示
-p: 打印，打印 n1~n2行之间的数据
-s: 替换以关键字形式替换，并不是替换整行. sed ‘s/旧字符串/新字符串/g’’
-```
-
-### sort 可以按照不同的数据类型来排序
-例如按数字或文字排序，排序结果也受语系编码的影响，例如有的语系字符是这么排序的 AaBbCc….建议语系使用 LANG=C
-```
-语法：sort [-fbMnrtuk]文件或输入流
-选项与参数：
--f:忽略大小写
--b:忽略最前面的空格
--c：检查文件是否已经按照顺序排序；
--i：排序时，除了040至176之间的ASCII字符外，忽略其他的字符；
--m：将几个排序号的文件进行合并；
--o<输出文件>：将排序后的结果存入制定的文件；
--M:以月份(英文)来排序
--r:反向排序
--u:就是 uniq
-
-sort的-n、-r、-k、-t选项的使用,k以那个 field 的进行排序,n作为数字对待，r逆序,t:分隔符与-k 连用:
-FStart.CStart Modifie,FEnd.CEnd Modifier
--------Start--------,-------End--------
- FStart.CStart 选项  ,  FEnd.CEnd 选项
-
-$ cat /etc/passwd |sort -t ':' -k 3
-$ head -n 200 zola1.txt | tr ' ' '\012' | grep -i "∧ven" | sort | uniq -c | sort -k1,1nr #tr将空格变为\n后, 再grep -i忽略字母大小写并查找ven开头的，然后sort排序，再uniq计数, 最后根据第一列k1倒序r排序
-$ sort -t ' ' -k 1.2,1.5 -nrk 3,3 facebook.txt #域分隔符为空格，先安第一个域的第二个字母到第5个字母排序，然后按第三个域以数字方式排序，
-
 ```
 
 ### shutdown [-t 秒][arkhncfF] 时间 [警告信息]
@@ -281,6 +356,24 @@ Runlevel System State
 6 Reboot the system
 S, s Single user mode
 多数的桌面的 linux 系统缺省的 runlevel 是5，用户登陆时是图形界面，而多数的服务器版本的linux 系统缺省的 runlevel 是3，用户登陆时是字符界面，runlevel 1和2除了调试之外很少使用，runlevel s 和 S 并不是直接给用户使用，而是用来为 Single user mode 作准备。
+```
+
+## 3.网络命令
+
+### netstat
+```
+netstat -rn   #显示核心路由信息
+
+netstat -a     #列出所有端口
+netstat -at    #列出所有tcp端口
+netstat -au    #列出所有udp端口  
+
+netstat -l        #只显示监听端口
+netstat -lt       #只列出所有监听 tcp 端口
+netstat -lu       #只列出所有监听 udp 端口
+netstat -lx       #只列出所有监听 UNIX 端口
+
+netstat -pt        #在netstat输出中显示 PID 和进程名称
 ```
 
 #### 部分摘自:
