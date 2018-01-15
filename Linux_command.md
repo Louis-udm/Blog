@@ -41,7 +41,7 @@ head -n 60 zola1.txt | tr ' ' '\012' | grep -i ven #\012=\n
 ### wc -l :计算文本文件的行数
 
 ### [awk的工作原理](http://man.linuxde.net/awk)
-awk 'BEGIN{ commands } pattern{ commands } END{ commands }'
+awk 'BEGIN{ commands } pattern{ commands } END{ commands }' </br>
 第一步：执行BEGIN{ commands }语句块中的语句；</br>
 第二步：从文件或标准输入(stdin)读取一行，然后执行pattern{ commands }语句块，它逐行扫描文件，从第一行到最后一行重复这个过程，直到文件全部被读取完毕。</br>
 第三步：当读至输入流末尾时，执行END{ commands }语句块
