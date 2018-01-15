@@ -6,7 +6,7 @@
 
 ## 1.文本处理相关命令
 
-### [Raccourci de VI](http://wiki.jikexueyuan.com/project/learn-linux-step-by-step/vim-and-vi-common-commands.html)
+### [Raccourci de VI](http://www2.nsysu.edu.tw/csmlab/unix/vi_command.htm)
 
 ### tr 字符串处理
 ```
