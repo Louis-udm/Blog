@@ -1,8 +1,8 @@
-# VS Code + jupyter
+# Visual Studio Code + jupyter plugin
 
 > Louis
 
-> 01 jan. 2018
+> 14 jan. 2018
 
 ## raccourci
 [shortcuts for mac os](https://www.jianshu.com/p/99ae6f886da4)
@@ -15,12 +15,12 @@
 3. Code Outline (Patryk Zawadzki)
 4. One Dark Pro
 5. vscode-fileheader, utilise: ctrl+opt+i. altinative: topper
-7. Bracket Pair Colorizer
-6. markdownlint
-8. markdown pdf
-9. markdown preview, utilise: cmd+k v
-10. git history
-11. latex Workshop, cmd+shift+p -> latex workshop view latex in new tab
+4. Bracket Pair Colorizer
+4. markdownlint
+4. markdown pdf
+4. markdown preview, utilise: cmd+k v
+4. git history
+4. LaTex Workshop, cmd+shift+p -> latex workshop view latex in new tab
 
 ## command:
 1. cmd+shift+p, >python: select interpreter #choisir version de python
