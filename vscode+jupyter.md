@@ -1,20 +1,26 @@
 # VS Code + jupyter
 
 > Louis
+
 > 01 jan. 2018
 
-## installer des plugin:
+## raccourci
+[shortcuts for mac os](https://www.jianshu.com/p/99ae6f886da4)
+[shortcuts frequent](https://www.zhihu.com/question/37623310)
+[vs code shortcuts for mac os](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf)
+
+## installer des plugins:
 1. Python (microsoft)
-
 2. Jupyter (Don Jayamanne)
-
 3. Code Outline (Patryk Zawadzki)
-
 4. One Dark Pro
-
-5. vscode-fileheader, utilise ctrl+opt+i. altinative: topper
-
+5. vscode-fileheader, utilise: ctrl+opt+i. altinative: topper
+7. Bracket Pair Colorizer
 6. markdownlint
+8. markdown pdf
+9. markdown preview, utilise: cmd+k v
+10. git history
+11. latex Workshop, cmd+shift+p -> latex workshop view latex in new tab
 
 ## command:
 1. cmd+shift+p, >python: select interpreter #choisir version de python
@@ -54,8 +60,16 @@ plt.show()
 
 6. cliquer "Run Cell"
 
+## topper
+menu->code->preference->raccoucis, add:
+    { "key": "ctrl+alt+i",      "command": "extension.addTopHeader",
+        "when": "editorTextFocus"}
+
 ## reference:
 1. [vscode](https://code.visualstudio.com/docs?start=true)
 2. [python on vs code](https://code.visualstudio.com/docs/languages/python)
 3. [Jupyter for VS code](https://github.com/DonJayamanne/vscodeJupyter)
 4. [Jupyter: Getting Started](https://github.com/DonJayamanne/pythonVSCode/wiki/Jupyter:-Getting-Started)
+
+test LaTex in mac:
+$$f(z)=\int_{i=1}^{100} \frac{x^2}{y} $$
