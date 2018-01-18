@@ -9,6 +9,18 @@
 [shortcuts frequent](https://www.zhihu.com/question/37623310) </br>
 [shortcuts pdf for mac os](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf) </br>
 
+1. cmd+shift+p, >python: select interpreter #choisir version de python
+2. cmd+shift+O #tout les symbols
+3. ctrl+cliquer function/variable/symboles
+4. rename symbole: sur le symbole, F2
+5. debug: cliquer la gauche du numero de ligne.
+6. cacher le menu: view->changer le menu, pour re afficher: alt
+4. column selection: opt+鼠标点选; opt+shift+鼠标点选或拖动; cmd+opt+上下键，然后shift+左右
+8. opt+上下: 交换行
+4. opt+左右: 光标按单词移动, cmd+左右:光标到行首行末
+4. cmd+f 查找 opt+cmd+f: 替换
+
+
 ## installer des plugins:
 1. Python (microsoft)
 2. Jupyter (Don Jayamanne)
@@ -23,16 +35,7 @@
 4. LaTex Workshop, cmd+shift+p -> latex workshop view latex in new tab
 4. Path Intellisense, utilise: quand on tape "./../"
 4. output colorizer
-
-## command:
-1. cmd+shift+p, >python: select interpreter #choisir version de python
-2. cmd+shift+O #tout les symbols
-3. ctrl+cliquer function/variable/symboles
-4. rename symbole: sur le symbole, F2
-5. debug: cliquer la gauche du numero de ligne.
-6. cacher le menu: view->changer le menu, pour re afficher: alt
-7. column selection: opt+鼠标点选; opt+shift+鼠标点选或拖动; cmd+opt+上下键，然后shift+左右
-8. opt+上下: 交换行
+4. Settings Sync, Upload Key : Shift + Alt + U , Download Key : Shift + Alt + D
 
 ## jupyter dans VS Code:
 1. installer la plugin Jupyter de  Don Jayamanne
@@ -64,7 +67,7 @@ plt.show()
 
 ## topper
 menu->code->preference->raccoucis, add:
-    { "key": "ctrl+alt+i",      "command": "topper.addTopHeader",
+    { "key": "ctrl+opt+shift+h",      "command": "topper.addTopHeader.personalProfile",
         "when": "editorTextFocus"}
 
 ## reference:
@@ -73,5 +76,5 @@ menu->code->preference->raccoucis, add:
 3. [Jupyter for VS code](https://github.com/DonJayamanne/vscodeJupyter)
 4. [Jupyter: Getting Started](https://github.com/DonJayamanne/pythonVSCode/wiki/Jupyter:-Getting-Started)
 
-test LaTex in mac:
+test LaTex in markdown:
 $$f(z)=\int_{i=1}^{100} \frac{x^2}{y} $$
