@@ -1,4 +1,10 @@
 # Raccourcis clavier
+
+## debug
+* help 
+* help command
+* [les commands de pdb](https://www.ibm.com/developerworks/cn/linux/l-cn-pythondebugger/)
+
 ## mode de commande (ESC)
 * Shift-Enter   run and go to next cell
 * Ctrl-Enter    run

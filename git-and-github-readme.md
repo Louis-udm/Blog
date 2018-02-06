@@ -78,7 +78,7 @@
 * git push origin master
 * git remote | git remote -v #查看远程库
 * git pull #把github的库的内容更新下来
-* <b>通常的步骤：在github上建好一个项目, 本地根目录(要存放项目目录的上级目录)下运行git clone ....</b>
+* <b>通常的clone步骤</b>：在github上建好一个项目, **本地根目录(要存放项目目录的上级目录)下** 运行git git clone https://github.com/Louis-udm/welcome_tutorials.git
 * git remote remove origin #取消本地目录下关联的远程库
 
 ### 参与Github的某个开源项目
