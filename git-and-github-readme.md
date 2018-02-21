@@ -20,6 +20,7 @@
 
 ### git client
 * git for mac : https://sourceforge.net/projects/git-osx-installer/* 
+* git for mac: Tower
 * git gui for mac :https://desktop.github.com
 * git --version
 
@@ -75,11 +76,17 @@
 ### 关联项目
 * git remote add origin git@github.com:Louis-udm/savoir-jupyter.git
 * git push -u origin master # -f 强制
-* git push origin master
+* git push origin master 推送给github
 * git remote | git remote -v #查看远程库
 * git pull #把github的库的内容更新下来
-* <b>通常的clone步骤</b>：在github上建好一个项目, **本地根目录(要存放项目目录的上级目录)下** 运行git git clone https://github.com/Louis-udm/welcome_tutorials.git
+* <b>通常的clone步骤</b>：在github上建好一个项目, **本地根目录(要存放项目目录的上级目录)下** 运行 git clone git@github.com:Louis-udm/savoir-jupyter.git
 * git remote remove origin #取消本地目录下关联的远程库
+
+### 合作项目
+1. 项目新建者：新建一个Repository，进入Repository的Settings，然后在Manage Collaborators里管理合作者了，添加其他git账号.
+2. 项目新建者：ssh-keygen -C "YourEmail@example.com" （这里的email使用github账号）生成公钥和私钥，在Accounts Settings->SSH keys 将公钥上传上去。
+3. 其他合作者: 本地根目录(要存放项目目录的上级目录)下运行: git clone git@github.com:项目新建者账号/项目名.git
+
 
 ### 参与Github的某个开源项目
 * 点“Fork”就在自己的账号下克隆了一个bootstrap仓库，然后，从自己的账号下clone
@@ -96,7 +103,15 @@
 * git merge upstream/master 把 upstream/master 分支合并到本地 master 上，这样就完成了同步，并且不会丢掉本地修改的内容。
 * 如果想更新到 GitHub 的 fork 上，直接 git push origin master
 
+### 新建git组织
+1. Accounts Settings -> Organizations -> Create new Organizations 新建一个组织, 并添加项目成员。
+2. 新建一个Repository ->  进入Repository的Settings -> Collaborators -> 在Teams下面点击刚创建的组织: 比如my-organize/owners 添加或者remove组织成员. 组织的所有者可以针对不同的代码仓库建立不同访问权限的团队。
+
 ## reference:
 * https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/001375840038939c291467cc7c747b1810aab2fb8863508000
 * http://www.runoob.com/w3cnote/git-guide.html
 * https://www.zhihu.com/question/20070065
+
+* http://xiaocong.githubio/blog/2013/03/20/team-collaboration-with-github/
+* http://blog.leezhong.com/tech/2011/02/25/git-workflow-with-blog-demohtml
+* http://www.yangzhiping.com/tech/github.html#q1
