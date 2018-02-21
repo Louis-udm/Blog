@@ -76,10 +76,10 @@
 ### 关联项目
 * git remote add origin git@github.com:Louis-udm/savoir-jupyter.git
 * git push -u origin master # -f 强制
-* git push origin master 推送给github
+* git push origin master 推送给github (或默认直接git push)
 * git remote | git remote -v #查看远程库
 * git pull #把github的库的内容更新下来
-* <b>通常的clone步骤</b>：在github上建好一个项目, **本地根目录(要存放项目目录的上级目录)下** 运行 git clone git@github.com:Louis-udm/savoir-jupyter.git
+* <b>通常的clone步骤</b>：在github上建好一个项目, **本地根目录(要存放项目目录的上级目录)下** 运行: git clone git@github.com:Louis-udm/savoir-jupyter.git
 * git remote remove origin #取消本地目录下关联的远程库
 
 ### 合作项目
