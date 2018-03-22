@@ -1,0 +1,1067 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#%%
+import time
+import os
+import sys
+import collections
+import gc
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+
+import torchvision
+import torchvision.transforms
+
+from_numpy = torch.from_numpy
+
+import numpy as np
+import random
+import matplotlib
+import matplotlib.pyplot as plt
+import pickle
+import gzip
+
+#set path and load mnist data
+os.chdir("/Users/louis/Google Drive/M.Sc-DIRO-UdeM/IFT6135-Apprentissage de représentations/assignment1")
+# os.chdir("/Users/fanxiao/Google Drive/UdeM/IFT6135 Representation Learning/homework1/programming part ")
+print(os.getcwd())
+
+
+#%%
+'''
+# Building model
+'''
+class MLPnet(nn.Module):
+
+    #todo: init paramater
+    def __init__(self,sizes):
+        super(MLPnet, self).__init__()
+
+        self.sizes = sizes
+
+        #nn.CrossEntropyLoss(oa)=nn.NLLLoss(log(softmax(oa)))=nn.NLLLoss(nn.logsoftmax(oa))
+        self.loss_criterion = nn.NLLLoss()
+        # self.loss_criterion = nn.CrossEntropyLoss()
+        neu_seq=collections.OrderedDict()
+        for i in range(len(sizes)-1):
+            neu_seq[str(i*2)]=torch.nn.Linear(self.sizes[i], self.sizes[i+1])
+            if i<len(sizes)-2:
+                neu_seq[str(i*2+1)]=torch.nn.ReLU()
+        neu_seq[str(i*2+1)]=torch.nn.LogSoftmax()
+        # print(neu_seq)
+        self.mlp_architecture = torch.nn.Sequential(neu_seq)
+
+    def forward(self, x):
+        log_proba_out = self.mlp_architecture(x)
+        return log_proba_out
+        
+    def predict(self, proba_out):
+        # return np.argmax(proba_out.data.cpu().numpy(),1)
+        _,max_ind=proba_out.max(1)
+        return max_ind
+    
+    def loss(self, log_proba_out, target):
+        # log_proba = torch.log(proba_out)
+        #nn.CrossEntropyLoss(oa)=nn.NLLLoss(log(softmax(oa)))=nn.NLLLoss(nn.logsoftmax(oa))
+        #result is sum_loss_minibatch/size_minibatch
+        return self.loss_criterion(log_proba_out, target)
+
+    def adjust_lr(self, optimizer, epoch, total_epochs):
+        lr = lr0 * (0.1 ** (epoch / float(total_epochs)))
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+
+
+    def init_weights_zero(self,m):
+        if type(m) == nn.Linear:
+            nn.init.constant(m.weight, 0.0)
+    #         print(m.weight)
+
+    def init_weights_normal(self,m):
+        if type(m) == nn.Linear:
+            nn.init.normal(m.weight)
+            # print(m.weight)
+
+    def init_weights_glorot(self,m):
+        if type(m) == nn.Linear:
+            nn.init.xavier_uniform(m.weight)
+    #         print(m.weight)
+
+    # def accuracy(predict_out, y):
+    #     correct = torch.eq(predict_out, y).sum().type(torch.FloatTensor)
+    #     return correct / y.size(0)
+        
+        
+    def evaluate(self, dataset_loader):
+        LOSSES = 0
+        COUNTER = 0
+        ACCURACY=0
+        for batch in dataset_loader:
+            # optimizer.zero_grad()
+            x, y = batch
+            x = Variable(x).view(-1,self.sizes[0])
+            y = Variable(y).view(-1)
+            if cuda:
+                x = x.cuda()
+                y = y.cuda()
+            
+            log_proba_out=self.forward(x)
+            loss = self.loss(log_proba_out, y)
+            predict_out=self.predict(log_proba_out)
+
+            n = y.size(0)
+            LOSSES += loss.sum().data.cpu().numpy() * n
+            # loss is sum_loss_minibatch/size_minibatch
+            # LOSSES += loss * n
+            COUNTER += n
+            ACCURACY+=float(torch.eq(predict_out, y).sum().data.cpu().numpy())
+        # get average loss
+        return ACCURACY / float(COUNTER) ,LOSSES / float(COUNTER)
+
+    def train_model(self, optim_func, lr, momentum, num_epochs, batch_size, train_data, valid_data=None, test_data=None, display=5):
+
+        LOSSES = 0
+        COUNTER = 0
+        ITERATIONS = 0
+        learning_curve_nll_train = list()
+        learning_curve_nll_valid = list()
+        learning_curve_nll_test = list()
+        learning_curve_acc_train = list()
+        learning_curve_acc_valid = list()
+        learning_curve_acc_test = list()
+
+        # separate data to mini batchs.
+        train_loader = torch.utils.data.DataLoader(
+                train_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        if valid_data is not None:
+            valid_loader = torch.utils.data.DataLoader(
+                valid_data, batch_size=batch_size, shuffle=True, num_workers=2)        
+        if test_data is not None:
+            test_loader = torch.utils.data.DataLoader(
+                test_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        
+
+        #training
+        print('Training Begining, Count of batchs:',len(train_loader))
+
+        optimizer=optim_func(self.parameters(), lr, momentum)
+
+        # trainloss_every = 200
+        for ep in range(num_epochs):
+            for batch in train_loader:
+                optimizer.zero_grad()
+                x, y = batch
+                x = Variable(x).view(-1,self.sizes[0])
+                y = Variable(y).view(-1)
+                if cuda:
+                    x = x.cuda()
+                    y = y.cuda()
+                    
+                log_proba_out=self.forward(x)
+                loss = self.loss(log_proba_out, y)
+                loss.backward()
+                optimizer.step()
+            
+                # n = y.size(0)
+                # # print(loss)
+                # LOSSES += loss.sum().data.cpu().numpy() * n
+                # # LOSSES += loss * n
+                # COUNTER += n
+                # ITERATIONS += 1
+                # if ITERATIONS % trainloss_every == 0:
+                #     avg_loss = LOSSES / float(COUNTER)
+                #     LOSSES = 0
+                #     COUNTER = 0
+                #     print(" Iteration {}: avg loss of TRAIN {}".format(
+                #         ITERATIONS, avg_loss))
+            
+            
+            # record loss values and accuray values
+            train_acc,train_loss = self.evaluate(train_loader)
+            learning_curve_nll_train.append(train_loss)
+            learning_curve_acc_train.append(train_acc)
+            if valid_data is not None:
+                valid_acc,valid_loss = self.evaluate(valid_loader)
+                learning_curve_nll_valid.append(valid_loss)
+                learning_curve_acc_valid.append(valid_acc)
+            if test_data is not None:
+                test_acc,test_loss = self.evaluate(test_loader)
+                learning_curve_nll_test.append(test_loss)
+                learning_curve_acc_test.append(test_acc)
+
+            # print the process of the training.  
+            if display!=0 and ep % display==0:
+                if valid_data is None:
+                    valid_loss=0
+                    valid_acc=0
+                if test_data is None:
+                    test_loss=0
+                    test_acc=0
+                print("Epoch:{}, [NLL] TRAIN {} / VALID {} / TEST {}".format(ep+1,
+                    train_loss, valid_loss, test_loss))
+                print("Epoch:{}, [ACC] TRAIN {} / VALID {} / TEST {}".format(ep+1,
+                    train_acc, valid_acc, test_acc))
+            
+            self.adjust_lr(optimizer, ep+1, num_epochs)
+            
+        return learning_curve_nll_train, \
+            learning_curve_nll_valid, \
+            learning_curve_nll_test, \
+            learning_curve_acc_train, \
+            learning_curve_acc_valid,\
+            learning_curve_acc_test
+
+
+    # train method for problem2--variance in training
+    def train_model2(self, optim_func, lr, momentum, num_epochs, batch_size, train_data, valid_data=None, test_data=None, display=5, record_forupdates=5000):
+
+        learning_curve_nll_train = list()
+
+        # separate data to mini batchs.
+        train_loader = torch.utils.data.DataLoader(
+                train_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        if valid_data is not None:
+            valid_loader = torch.utils.data.DataLoader(
+                valid_data, batch_size=batch_size, shuffle=True, num_workers=2)        
+        if test_data is not None:
+            test_loader = torch.utils.data.DataLoader(
+                test_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        
+
+        #training
+        print('Training Begining, Count of batchs:',len(train_loader))
+
+        optimizer=optim_func(self.parameters(), lr, momentum)
+
+        ITERATIONS = 1
+        for ep in range(num_epochs):
+            for batch in train_loader:
+                optimizer.zero_grad()
+                x, y = batch
+                x = Variable(x).view(-1,self.sizes[0])
+                y = Variable(y).view(-1)
+                if cuda:
+                    x = x.cuda()
+                    y = y.cuda()
+                    
+                log_proba_out=self.forward(x)
+                loss = self.loss(log_proba_out, y)
+
+                learning_curve_nll_train.append(loss.data[0])
+
+                if display!=0 and ITERATIONS % display==0:
+                    print("Update:{}, [NLL] TRAIN {} .".format(ITERATIONS,
+                        loss.data[0]))
+
+                loss.backward()
+                optimizer.step()
+
+                if ITERATIONS>=record_forupdates:
+                    return learning_curve_nll_train
+
+                ITERATIONS += 1
+                
+
+            self.adjust_lr(optimizer, ep+1, num_epochs)
+            
+        return learning_curve_nll_train
+
+
+#%%
+class MLPnet_CEL(nn.Module):
+
+    #todo: init paramater
+    def __init__(self,sizes):
+        super(MLPnet_CEL, self).__init__()
+
+        self.sizes = sizes
+
+        #nn.CrossEntropyLoss(oa)=nn.NLLLoss(log(softmax(oa)))=nn.NLLLoss(nn.logsoftmax(oa))
+        # self.loss_criterion = nn.NLLLoss()
+        self.loss_criterion = nn.CrossEntropyLoss()
+        neu_seq=collections.OrderedDict()
+        for i in range(len(sizes)-1):
+            neu_seq[str(i*2)]=torch.nn.Linear(self.sizes[i], self.sizes[i+1])
+            if i<len(sizes)-2:
+                neu_seq[str(i*2+1)]=torch.nn.ReLU()
+        # neu_seq[str(i*2+1)]=torch.nn.LogSoftmax()
+        # print(neu_seq)
+        self.mlp_architecture = torch.nn.Sequential(neu_seq)
+
+    def forward(self, x):
+        crude_out = self.mlp_architecture(x)
+        return crude_out
+        
+    def predict(self, crude_out):
+        # return np.argmax(proba_out.data.cpu().numpy(),1)
+        logsoftmax=torch.nn.functional.softmax(crude_out)
+        _,max_ind=logsoftmax.max(1)
+        return max_ind
+    
+    def loss(self, crude_out, target):
+        # log_proba = torch.log(proba_out)
+        #nn.CrossEntropyLoss(oa)=nn.NLLLoss(log(softmax(oa)))=nn.NLLLoss(nn.logsoftmax(oa))
+        #result is sum_loss_minibatch/size_minibatch
+        return self.loss_criterion(crude_out, target)
+
+    def adjust_lr(self, optimizer, epoch, total_epochs):
+        lr = lr0 * (0.1 ** (epoch / float(total_epochs)))
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+
+
+    def init_weights_zero(self,m):
+        if type(m) == nn.Linear:
+            nn.init.constant(m.weight, 0.0)
+    #         print(m.weight)
+
+    def init_weights_normal(self,m):
+        if type(m) == nn.Linear:
+            nn.init.normal(m.weight)
+            # print(m.weight)
+
+    def init_weights_glorot(self,m):
+        if type(m) == nn.Linear:
+            nn.init.xavier_uniform(m.weight)
+    #         print(m.weight)
+
+    # def accuracy(predict_out, y):
+    #     correct = torch.eq(predict_out, y).sum().type(torch.FloatTensor)
+    #     return correct / y.size(0)
+        
+        
+    def evaluate(self, dataset_loader):
+        LOSSES = 0
+        COUNTER = 0
+        ACCURACY=0
+        for batch in dataset_loader:
+            # optimizer.zero_grad()
+            x, y = batch
+            x = Variable(x).view(-1,self.sizes[0])
+            y = Variable(y).view(-1)
+            if cuda:
+                x = x.cuda()
+                y = y.cuda()
+            
+            crude_out=self.forward(x)
+            loss = self.loss(crude_out, y)
+            predict_out=self.predict(crude_out)
+
+            n = y.size(0)
+            LOSSES += loss.sum().data.cpu().numpy() * n
+            # loss is sum_loss_minibatch/size_minibatch
+            # LOSSES += loss * n
+            COUNTER += n
+            ACCURACY+=float(torch.eq(predict_out, y).sum().data.cpu().numpy())
+        # get average loss
+        return ACCURACY / float(COUNTER) ,LOSSES / float(COUNTER)
+
+    def train_model(self, optim_func, lr, momentum, num_epochs, batch_size, train_data, valid_data=None, test_data=None, display=5):
+
+        LOSSES = 0
+        COUNTER = 0
+        ITERATIONS = 0
+        learning_curve_nll_train = list()
+        learning_curve_nll_valid = list()
+        learning_curve_nll_test = list()
+        learning_curve_acc_train = list()
+        learning_curve_acc_valid = list()
+        learning_curve_acc_test = list()
+
+        # separate data to mini batchs.
+        train_loader = torch.utils.data.DataLoader(
+                train_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        if valid_data is not None:
+            valid_loader = torch.utils.data.DataLoader(
+                valid_data, batch_size=batch_size, shuffle=True, num_workers=2)        
+        if test_data is not None:
+            test_loader = torch.utils.data.DataLoader(
+                test_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        
+
+        #training
+        print('Training Begining, Count of batchs:',len(train_loader))
+
+        optimizer=optim_func(self.parameters(), lr, momentum)
+
+        # trainloss_every = 200
+        for ep in range(num_epochs):
+            for batch in train_loader:
+                optimizer.zero_grad()
+                x, y = batch
+                x = Variable(x).view(-1,self.sizes[0])
+                y = Variable(y).view(-1)
+                if cuda:
+                    x = x.cuda()
+                    y = y.cuda()
+                    
+                crude_out=self.forward(x)
+                loss = self.loss(crude_out, y)
+                loss.backward()
+                optimizer.step()
+            
+                # n = y.size(0)
+                # # print(loss)
+                # LOSSES += loss.sum().data.cpu().numpy() * n
+                # # LOSSES += loss * n
+                # COUNTER += n
+                # ITERATIONS += 1
+                # if ITERATIONS % trainloss_every == 0:
+                #     avg_loss = LOSSES / float(COUNTER)
+                #     LOSSES = 0
+                #     COUNTER = 0
+                #     print(" Iteration {}: avg loss of TRAIN {}".format(
+                #         ITERATIONS, avg_loss))
+            
+            
+            # record loss values and accuray values
+            train_acc,train_loss = self.evaluate(train_loader)
+            learning_curve_nll_train.append(train_loss)
+            learning_curve_acc_train.append(train_acc)
+            if valid_data is not None:
+                valid_acc,valid_loss = self.evaluate(valid_loader)
+                learning_curve_nll_valid.append(valid_loss)
+                learning_curve_acc_valid.append(valid_acc)
+            if test_data is not None:
+                test_acc,test_loss = self.evaluate(test_loader)
+                learning_curve_nll_test.append(test_loss)
+                learning_curve_acc_test.append(test_acc)
+
+            # print the process of the training.  
+            if display!=0 and ep % display==0:
+                if valid_data is None:
+                    valid_loss=0
+                    valid_acc=0
+                if test_data is None:
+                    test_loss=0
+                    test_acc=0
+                print("Epoch:{}, [NLL] TRAIN {} / VALID {} / TEST {}".format(ep+1,
+                    train_loss, valid_loss, test_loss))
+                print("Epoch:{}, [ACC] TRAIN {} / VALID {} / TEST {}".format(ep+1,
+                    train_acc, valid_acc, test_acc))
+            
+            self.adjust_lr(optimizer, ep+1, num_epochs)
+            
+        return learning_curve_nll_train, \
+            learning_curve_nll_valid, \
+            learning_curve_nll_test, \
+            learning_curve_acc_train, \
+            learning_curve_acc_valid,\
+            learning_curve_acc_test
+
+
+    # train method for problem2--variance in training
+    def train_model2(self, optim_func, lr, momentum, num_epochs, batch_size, train_data, valid_data=None, test_data=None, display=5, record_forupdates=5000):
+
+        learning_curve_nll_train = list()
+
+        # separate data to mini batchs.
+        train_loader = torch.utils.data.DataLoader(
+                train_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        if valid_data is not None:
+            valid_loader = torch.utils.data.DataLoader(
+                valid_data, batch_size=batch_size, shuffle=True, num_workers=2)        
+        if test_data is not None:
+            test_loader = torch.utils.data.DataLoader(
+                test_data, batch_size=batch_size, shuffle=True, num_workers=2)
+        
+
+        #training
+        print('Training Begining, Count of batchs:',len(train_loader))
+
+        optimizer=optim_func(self.parameters(), lr, momentum)
+
+        ITERATIONS = 1
+        for ep in range(num_epochs):
+            for batch in train_loader:
+                optimizer.zero_grad()
+                x, y = batch
+                x = Variable(x).view(-1,self.sizes[0])
+                y = Variable(y).view(-1)
+                if cuda:
+                    x = x.cuda()
+                    y = y.cuda()
+                    
+                log_proba_out=self.forward(x)
+                loss = self.loss(log_proba_out, y)
+
+                learning_curve_nll_train.append(loss.data[0])
+
+                if display!=0 and ITERATIONS % display==0:
+                    print("Update:{}, [NLL] TRAIN {} .".format(ITERATIONS,
+                        loss.data[0]))
+
+                loss.backward()
+                optimizer.step()
+
+                if ITERATIONS>=record_forupdates:
+                    return learning_curve_nll_train
+
+                ITERATIONS += 1
+                
+
+            self.adjust_lr(optimizer, ep+1, num_epochs)
+            
+        return learning_curve_nll_train
+
+
+
+
+#%%
+# #test
+# sizes=[784,600,100,10]
+# model = MLPnet(sizes)
+# optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.0)
+# train_loader = torch.utils.data.DataLoader(
+#         mnist_train_data, batch_size=100, shuffle=True, num_workers=2)
+# for batch in train_loader:
+#     # 对所有的参数的梯度缓冲区进行归零
+#     optimizer.zero_grad()
+#     x, y = batch
+#     x = Variable(x).view(-1,784)
+#     y = Variable(y).view(-1)
+#     proba_out=model.forward(x)
+#     loss = model.loss(proba_out, y)
+#     # print(proba_out)
+#     print('loss:',loss* y.size(0))
+#     # print(loss.sum().data.cpu().numpy() * y.size(0))
+#     loss.backward()
+#     optimizer.step()
+
+#     print('predict size:',model.predict(proba_out).size())
+#     break
+# print('test finished.')
+
+
+#%%
+'''
+######## Problem1 ###########
+'''
+
+print('Load MNIST data:')
+# Pour l'ensemble de donnees de mnist
+f_mnist=gzip.open('datasets/mnist.pkl.gz')
+f=gzip.open('datasets/mnist.pkl.gz')
+mnistdata=pickle.load(f)
+f.close()
+mnist_train_inputs=mnistdata[0][0]
+mnist_train_labels=mnistdata[0][1]
+mnist_valid_inputs=mnistdata[1][0]
+mnist_valid_labels=mnistdata[1][1]
+mnist_test_inputs=mnistdata[2][0]
+mnist_test_labels=mnistdata[2][1]
+mnist_train_data = torch.utils.data.TensorDataset(
+    torch.from_numpy(mnist_train_inputs),torch.from_numpy(mnist_train_labels))
+mnist_valid_data = torch.utils.data.TensorDataset(
+    torch.from_numpy(mnist_valid_inputs),torch.from_numpy(mnist_valid_labels))
+mnist_test_data = torch.utils.data.TensorDataset(
+    torch.from_numpy(mnist_test_inputs),torch.from_numpy(mnist_test_labels))
+
+print('mnist_train:',len(mnist_train_data))
+print('mnist_valid:',len(mnist_valid_data))
+print('mnist_test:',len(mnist_test_data))
+
+#%% 
+#set hyper parameters
+sizes=[784,550,130,10]
+num_epochs = 10
+batch_size = 64
+lr0 = 0.02
+momentum=0.0
+cuda = False
+
+#define mlp net
+model1 = MLPnet(sizes)
+if cuda:
+    model1 = model1.cuda()
+# for param in model1.parameters():
+#     print(type(param.data), param.size())
+print('Model apacity: {} parameters.'.format(785*550+550*130+11*130+10))
+
+#%%
+# Zero weight
+model1.apply(model1.init_weights_zero)
+ll_train_zero,ll_valid_zero,ll_test_zero,acc_train_zero,acc_valid_zero,acc_test_zero= \
+    model1.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, mnist_train_data,
+        mnist_valid_data,mnist_test_data, display=5)
+#%%
+# Normal initialization
+model1.apply(model1.init_weights_normal)
+ll_train_normal,ll_valid_normal,ll_test_normal,acc_train_normal,acc_valid_normal,acc_test_normal=\
+    model1.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, mnist_train_data,
+        mnist_valid_data,mnist_test_data, display=5)
+
+#%%
+# Glorot initialization
+model1.apply(model1.init_weights_glorot)
+ll_train_glorot,ll_valid_glorot,ll_test_glorot,acc_train_glorot,acc_valid_glorot,acc_test_glorot=\
+    model1.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, mnist_train_data,
+        mnist_valid_data,mnist_test_data, display=5)
+
+#%%
+# Loss on training dataset with different initialization method
+plt.figure()
+plt.plot(range(1,num_epochs+1),ll_train_zero,label='Zero')
+plt.plot(range(1,num_epochs+1),ll_train_normal,label='Normal')
+plt.plot(range(1,num_epochs+1),ll_train_glorot,label='Glorot')
+plt.xlabel('Epochs')
+plt.ylabel('Training loss')
+plt.legend()
+plt.savefig('problem1-init.pdf')
+plt.show()
+
+#%%
+'''
+# Learning Curves
+'''
+# run model with 100 epochs
+num_epochs = 10
+
+sizes=[784,600,100,10]
+num_epochs = 10
+batch_size = 64
+lr0 = 0.06
+momentum=0.0
+model1 = MLPnet(sizes)
+model1.apply(model1.init_weights_glorot)
+ll_train_glorot,ll_valid_glorot,ll_test_glorot,acc_train_glorot,acc_valid_glorot,acc_test_glorot=\
+    model1.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, mnist_train_data,
+        mnist_valid_data,mnist_test_data, display=1)
+
+
+#%%
+#plot accuracy as a function of epoch
+plt.figure()
+plt.plot(range(1,num_epochs+1),acc_train_glorot,label='Training')
+plt.plot(range(1,num_epochs+1),acc_valid_glorot,label='Validation')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.savefig('problem1-accuracy1.pdf')
+plt.show()
+
+#%%
+# double capacity 
+num_epochs = 100
+sizes=[784,910,310,10]
+model1 = MLPnet(sizes)
+if cuda:
+    model1 = model1.cuda()
+print('Double model apacity: {} parameters.'.format(785*910+910*310+11*310+10))
+
+model1.apply(model1.init_weights_glorot)
+ll_train_glorot2,ll_valid_glorot2,ll_test_glorot2,acc_train_glorot2,acc_valid_glorot2,acc_test_glorot2=\
+    model1.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, mnist_train_data,
+        mnist_valid_data,mnist_test_data, display=5)
+
+
+#%%
+# plot accuracy as a function of epoch
+plt.figure()
+plt.plot(range(1,num_epochs+1),acc_train_glorot2,label='Training')
+plt.plot(range(1,num_epochs+1),acc_valid_glorot2,label='Validation')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Double model capacity')
+plt.legend()
+plt.savefig('problem1-accuracy2.pdf')
+plt.show()
+
+#%%
+'''
+# Training Set Size, Generalization Gap, and Standard Error.
+'''
+list_a = [0.01,0.02,0.05,0.1,1]
+num_epochs = 100
+N = 50000
+result = np.zeros((len(list_a),5))
+for a in range(len(list_a)) :
+    for i in range(5) : 
+        Na = int (list_a[a]*N)
+        index = np.random.choice(N,Na)
+        mnist_train_subinputs = mnist_train_inputs[index,:]
+        mnist_train_sublabels = mnist_train_labels[index]
+        mnist_train_subdata = torch.utils.data.TensorDataset(
+            torch.from_numpy(mnist_train_subinputs),torch.from_numpy(mnist_train_sublabels))
+#        print "training set size : ", len(mnist_train_subdata)
+            
+        model1.apply(model1.init_weights_glorot)
+        ll_train_sub,ll_valid_sub,ll_test_sub,acc_train_sub,acc_valid_sub,acc_test_sub=\
+            model1.train_model(torch.optim.SGD, lr0, momentum, 
+            num_epochs, batch_size, mnist_train_subdata,
+            mnist_valid_data,mnist_test_data, False)
+        
+        best = np.argmax(acc_valid_sub)
+        diff = acc_train_sub[best] - acc_test_sub[best]
+        result[a][i] = diff
+        
+        print ("training set size {}, time {}, difference {}".format(Na,i+1,diff))
+
+#%%
+avg_gap = np.mean(result,axis = 1)    
+std_gap = np.std(result,axis = 1)
+for a in range(len(list_a)) :
+    print ("training set size {}, average generalization gap {}, standard error {}".format(list_a[a]*N,avg_gap[a],std_gap[a]))
+
+# training set size 500.0, average generalization gap 0.09596, standard error 0.015787666072
+# training set size 1000.0, average generalization gap 0.08316, standard error 0.00559842835089
+# training set size 2500.0, average generalization gap 0.06354, standard error 0.00179287478648
+# training set size 5000.0, average generalization gap 0.05372, standard error 0.00342192928039
+# training set size 50000, average generalization gap 0.023868, standard error 0.00114281057048    
+
+
+
+'''
+######## Problem2 ###########
+'''
+#%%
+'''
+# Load corpus data
+'''
+print('Load Corpus data:')
+news_train_inputs_o=  np.loadtxt('20news-bydate/matlab/train.data')
+news_train_labels_o=  np.loadtxt('20news-bydate/matlab/train.label')
+news_test_inputs_o =  np.loadtxt('20news-bydate/matlab/test.data')
+news_test_labels_o =  np.loadtxt('20news-bydate/matlab/test.label')
+# print(news_train_inputs.shape)
+# print(news_train_labels.shape)
+# print(news_test_inputs.shape)
+# print(news_test_labels.shape)
+
+type_max=int(np.max([np.max(news_train_inputs_o[:,1]),np.max(news_test_inputs_o[:,1])]))
+num_class=int(np.max(news_train_labels_o))
+
+def constructVectors(inputs):
+    doc_max=int(np.max(inputs[:,0]))
+    data=torch.zeros(doc_max,type_max)
+    for w in inputs:
+        data[w[0]-1,w[1]-1]=w[2]
+    return data
+
+news_train_inputs= constructVectors(news_train_inputs_o)
+news_test_inputs = constructVectors(news_test_inputs_o)
+news_train_labels=torch.from_numpy(news_train_labels_o-1).int()
+news_test_labels=torch.from_numpy(news_test_labels_o-1).int()
+
+ind_separate=news_train_inputs.size(0)/5
+np.random.seed(456)
+indexs = np.arange(0,news_train_inputs.size(0))
+np.random.shuffle(indexs)
+news_valid_inputs = news_train_inputs[indexs[:ind_separate]]
+news_valid_labels = news_train_labels[indexs[:ind_separate]]
+news_train_inputs  = news_train_inputs[indexs[ind_separate:]]
+news_train_labels  = news_train_labels[indexs[ind_separate:]]
+
+print('max index of types:',type_max)
+print('number of class:',num_class)
+
+del news_train_inputs_o,news_train_labels_o,news_test_inputs_o,news_test_labels_o
+gc.collect()
+
+#%%
+'''
+# No preprocessing:
+'''
+# preprocess the data for NO-Preprocessing
+news_train_data  = torch.utils.data.TensorDataset(
+    news_train_inputs,news_train_labels)
+news_valid_data = torch.utils.data.TensorDataset(
+    news_valid_inputs,news_valid_labels)
+news_test_data = torch.utils.data.TensorDataset(
+    news_test_inputs,news_test_labels)
+
+print('news_train:',len(news_train_data))
+print('news_valid:',len(news_valid_data))
+print('news_test:',len(news_test_data))
+
+#%%
+#set hyper parameters
+sizes=[type_max,100,num_class]
+momentum=0.9
+cuda = False
+
+num_epochs = 20
+#define mlp net
+model2 = MLPnet(sizes)
+if cuda:
+    model2 = model2.cuda()
+
+#%%
+lr0 = 0.01
+batch_size = 64
+model2.apply(model2.init_weights_glorot)
+ll_train,ll_valid,ll_test,acc_train,acc_valid,acc_test=\
+    model2.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, news_train_data,
+        news_valid_data,news_test_data,display=2)
+
+#%%
+plt.figure()
+plt.plot(range(1,num_epochs+1),acc_train,label='Training')
+plt.plot(range(1,num_epochs+1),acc_valid,label='Validation')
+plt.plot(range(1,num_epochs+1),acc_test,label='Test')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('No preprocessing data')
+plt.legend()
+plt.savefig('problem2-no-preprocessing.pdf')
+plt.show()
+
+#%%
+'''
+# tf-idf:
+'''
+from sklearn.feature_extraction.text import TfidfTransformer
+# test
+# counts1 = [[3, 0, 1],[2, 0, 0],[3, 1, 0]]
+# print(TfidfTransformer().fit_transform(counts1).toarray())
+
+#preprocess the data to tf-idf
+TfidfTransf=TfidfTransformer()
+TfidfTransf.fit(news_train_inputs.numpy())
+# print(type(np.float(TfidfTransf.transform(
+#     news_train_inputs.numpy()).toarray()[0,9652])))
+
+tfidf_train_inputs=torch.from_numpy(TfidfTransf.transform(
+    news_train_inputs.numpy()).toarray()).type(torch.FloatTensor)
+tfidf_valid_inputs=torch.from_numpy(TfidfTransf.transform(
+    news_valid_inputs.numpy()).toarray()).type(torch.FloatTensor)
+tfidf_test_inputs=torch.from_numpy(TfidfTransf.transform(
+    news_test_inputs.numpy()).toarray()).type(torch.FloatTensor)
+
+tfidf_train_data  = torch.utils.data.TensorDataset(
+    tfidf_train_inputs,news_train_labels)
+tfidf_valid_data = torch.utils.data.TensorDataset(
+    tfidf_valid_inputs,news_valid_labels)
+tfidf_test_data = torch.utils.data.TensorDataset(
+    tfidf_test_inputs,news_test_labels)
+
+print('tfidf_train:',len(tfidf_train_data))
+print('tfidf_valid:',len(tfidf_valid_data))
+print('tfidf_test:',len(tfidf_test_data))
+
+# print(torch.nonzero(tfidf_test_inputs[0]))
+# print(tfidf_test_inputs[0,40052])
+
+#%%
+model2 = MLPnet(sizes)
+momentum=0.9
+num_epochs = 40
+
+lr0 = 0.02
+batch_size = 64
+model2.apply(model2.init_weights_glorot)
+ll_train,ll_valid,ll_test,acc_train,acc_valid,acc_test=\
+    model2.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, tfidf_train_data,
+        tfidf_valid_data,tfidf_test_data,display=2)
+
+#%%
+plt.figure()
+plt.plot(range(1,num_epochs+1),acc_train,label='Training')
+plt.plot(range(1,num_epochs+1),acc_valid,label='Validation')
+plt.plot(range(1,num_epochs+1),acc_test,label='Test')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('tif-idf data')
+plt.legend()
+plt.savefig('problem2-tf-idf.pdf')
+plt.show()
+
+#%%
+'''
+#Standardization
+'''
+
+#test
+# cou = torch.Tensor([[3, 0, 6],[2, 0, 0],[3, 0, 0]])
+# std=torch.std(cou,0)
+# mea=torch.mean(cou,0)
+# print(cou,mea,std)
+# print( (cou-mea)/(std+0.0001) )
+
+#%%
+#standard-deviation and mean
+# all_data=torch.cat((news_train_inputs,news_valid_inputs,news_test_inputs),0)
+
+std_train=torch.std(news_train_inputs,0)
+mean_train=torch.mean(news_train_inputs,0)
+
+# for i,v in enumerate(std_train):
+#     if v<=0.0001: print(i,v)
+
+# 那样epsilon就是防止分母出现0
+# 那分母variance有可能变0，如果某个单词在每个document里出现次数一样多
+epsilon=0.00001
+std_train_inputs=(news_train_inputs-mean_train)/(std_train+epsilon)
+std_valid_inputs=(news_valid_inputs-mean_train)/(std_train+epsilon)
+std_test_inputs=(news_test_inputs-mean_train)/(std_train+epsilon)
+
+# from sklearn import preprocessing
+# std_train_inputs=torch.from_numpy(preprocessing.scale(news_train_inputs.numpy())).type(torch.FloatTensor)
+
+std_train_data  = torch.utils.data.TensorDataset(
+    std_train_inputs,news_train_labels)
+std_valid_data = torch.utils.data.TensorDataset(
+    std_valid_inputs,news_valid_labels)
+std_test_data = torch.utils.data.TensorDataset(
+    std_test_inputs,news_test_labels)
+
+print('std_train:',len(std_train_data))
+print('std_valid:',len(std_valid_data))
+print('std_test:',len(std_test_data))
+
+#%%
+model3 = MLPnet_CEL(sizes)
+num_epochs=20
+lr0 = 0.04
+momentum=0.9
+batch_size = 60
+model3.apply(model3.init_weights_glorot)
+ll_train,ll_valid,ll_test,acc_train,acc_valid,acc_test=\
+    model3.train_model(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, std_train_data,
+        std_valid_data,std_test_data,display=2)
+
+#use nn.CrossEntropyLoss loss function
+#lr0 = 0.04,momentum=0.9,batch_size = 60
+# Epoch:19, [NLL] TRAIN [  6.22831010e+11] / VALID [  3.94262643e+15] / TEST [  6.82459244e+15]
+# Epoch:19, [ACC] TRAIN 0.996339840284 / VALID 0.772303595206 / TEST 0.621052631579
+#use nn.NLLLoss loss function
+#lr0 = 0.04,momentum=0.9,batch_size = 60
+# Epoch:19, [NLL] TRAIN [  7.76633795e+10] / VALID [  2.54784976e+15] / TEST [  3.95402393e+15]
+# Epoch:19, [ACC] TRAIN 0.99722715173 / VALID 0.774522858411 / TEST 0.617055296469
+#lr0 = 0.04,momentum=0.9,batch_size = 100
+#Epoch:19, [NLL] TRAIN [ 2254.25854492] / VALID [ 15640413.] / TEST [ 22184300.]
+#Epoch:19, [ACC] TRAIN 0.994232475599 / VALID 0.763426542388 / TEST 0.615189873418
+#lr0 = 0.02,momentum=0.9,batch_size = 100
+#Epoch:19, [NLL] TRAIN [ 0.10065832] / VALID [ 13549.46386719] / TEST [ 21848.9765625]
+#Epoch:19, [ACC] TRAIN 0.993566992014 / VALID 0.459387483356 / TEST 0.21745502998
+
+
+
+#%%
+plt.figure()
+plt.plot(range(1,num_epochs+1),acc_train,label='Training')
+plt.plot(range(1,num_epochs+1),acc_valid,label='Validation')
+plt.plot(range(1,num_epochs+1),acc_test,label='Test')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('standardization data')
+plt.legend()
+plt.savefig('problem2-standardization8.pdf')
+plt.show()
+plt.figure()
+plt.plot(range(1,num_epochs+1),ll_train,label='Training')
+plt.plot(range(1,num_epochs+1),ll_valid,label='Validation')
+plt.plot(range(1,num_epochs+1),ll_test,label='Test')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('standardization data')
+plt.legend()
+plt.savefig('problem2-standardization-loss8.pdf')
+plt.show()
+
+
+
+
+#%%
+'''
+# compare by ReseauMLP class
+'''
+from  ReseauMLPclass import ReseauMLP,rect,softmax
+
+std_train_data2 = np.concatenate( (std_train_inputs.numpy(),news_train_labels.numpy()[:,None]) , axis=1 )
+std_valid_data2 = np.concatenate( ( std_valid_inputs.numpy(),news_valid_labels.numpy()[:,None]) , axis=1 )
+std_test_data2 = np.concatenate( (std_test_inputs.numpy(),news_test_labels.numpy()[:,None]) , axis=1 )
+
+mu = 0.02
+epoque=20
+K_minibatch=64
+lambda1=0.0000001
+lambda2=0.0000001
+print ('\nReseauMLP Entrainement commence....')
+# Faire l'entrainement
+t1 = time.clock()
+rmlp = ReseauMLP(sizes,rect,softmax) 
+logs5=rmlp.gradiantDescentMiniBatchVite(std_train_data2, epoque, K_minibatch, mu, lambda1, lambda2,std_valid_data2,std_test_data2,display=True)
+t2 = time.clock()
+print ('Ca nous a pris ', t2-t1, ' secondes pour entrainer le reseau')
+print ('taux, num err, loss sur validation=',rmlp.evaluate(std_valid_data2))
+print ('taux, num err, loss sur test=',rmlp.evaluate(std_test_data2))
+
+plt.plot(logs5['ETaux'], label='Train erreur')
+plt.plot(logs5['VTaux'], label='Valid erreur')
+plt.plot(logs5['TTaux'], label='Test erreur')
+plt.title("Pourcentage de taux d'erreur")
+plt.legend()
+plt.show()
+
+plt.plot(logs5['ELoss'], label='Train loss')
+plt.plot(logs5['VLoss'], label='Valid loss')
+plt.plot(logs5['TLoss'], label='Test loss')
+plt.title('Fonction objectif')
+plt.legend()
+plt.show()    
+
+# Epoque 0 fini: 391 erreurs sur 9016 train data, Taux d'erreur: 0.0433673469388, Loss: 0.843252485571
+# Epoque 0 fini: 1206 erreurs sur 2253 validation data, Taux d'erreur: 0.535286284953, Loss: inf
+# Epoque 0 fini: 5763 erreurs sur 7505 test data, Taux d'erreur: 0.767888074617, Loss: inf
+# Epoque 1 fini: 157 erreurs sur 9016 train data, Taux d'erreur: 0.017413487134, Loss: 0.258847768135
+# Epoque 1 fini: 1174 erreurs sur 2253 validation data, Taux d'erreur: 0.521083000444, Loss: inf
+# Epoque 1 fini: 5642 erreurs sur 7505 test data, Taux d'erreur: 0.751765489674, Loss: inf
+# Epoque 2 fini: 94 erreurs sur 9016 train data, Taux d'erreur: 0.0104259094942, Loss: 0.145360554878
+# Epoque 2 fini: 1166 erreurs sur 2253 validation data, Taux d'erreur: 0.517532179316, Loss: inf
+# Epoque 2 fini: 5626 erreurs sur 7505 test data, Taux d'erreur: 0.749633577615, Loss: inf
+
+
+
+
+'''
+# Variance in training
+'''
+#%%
+'''
+tf-idf
+'''
+num_epochs = 60
+momentum=0.9
+
+lr0 = 0.006
+batch_size = 1
+model2 = MLPnet(sizes)
+model2.apply(model2.init_weights_glorot)
+ll_train1=\
+    model2.train_model2(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, tfidf_train_data,
+        tfidf_valid_data,display=100,record_forupdates=5000)
+
+#%%
+batch_size = 100
+model2.apply(model2.init_weights_glorot)
+ll_train2=\
+    model2.train_model2(torch.optim.SGD, lr0, momentum, 
+        num_epochs, batch_size, tfidf_train_data,
+        tfidf_valid_data,display=100,record_forupdates=5000)
+
+#%%
+plt.figure()
+plt.plot(range(1,5001),ll_train1,label='batch_size=1')
+plt.plot(range(1,5001),ll_train2,label='batch_size=100')
+# plt.plot(range(1,num_epochs+1),acc_test,label='Test')
+plt.xlabel('Times of Back propagations')
+plt.ylabel('Loss')
+plt.title('Difference of Batch size')
+plt.legend()
+plt.savefig('problem2-batch_size2.pdf')
+plt.show()
+
