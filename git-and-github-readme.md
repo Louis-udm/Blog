@@ -13,7 +13,8 @@
 * git add -u #Stages Modified & Deleted But Without New
 * git commit -m "new file and rename file" 或 git cm "first commit"
 * git status
-
+* git push # 上传到github
+* git pull # 把github的库的内容更新下来
 * rm readme.md # 不小心删了
 * git checkout readme.md
 
@@ -34,11 +35,10 @@
 
 ### 清除repository
 
-* find . -name ".git" | xargs rm -Rf 
-* #删除文件夹下的所有 .git 文件, 
-* #git init 重新初始化新建的git仓库
-* #接着add，commit等操作即可
-* 
+* find . -name ".git" | xargs rm -Rf #删除文件夹下的所有 .git 文件, 
+* git init 重新初始化新建的git仓库
+* 接着add，commit等操作即可
+
 
 ### 创建分支
 * git checkout -b dev
@@ -48,7 +48,6 @@
 * git merge dev #合并, 如果有冲突，手工解决，再用git add 解决后文件 & git commit -m
 * git log --graph --pretty=oneline --abbrev-commit
 * git branch -d feature1
-* 
 * [git stash #将现在的工作现场“储藏”起来, 去修改bug](https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137602359178794d966923e5c4134bc8bf98dfb03aea3000)
 
 ### 标签
