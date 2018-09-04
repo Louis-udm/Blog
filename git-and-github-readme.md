@@ -11,7 +11,7 @@
 * git add -A #stages All;
 * git add . #Stages New & Modified But Without Deleted
 * git add -u #Stages Modified & Deleted But Without New
-* git commit -m "new file and rename file"
+* git commit -m "new file and rename file" 或 git cm "first commit"
 * git status
 
 * rm readme.md # 不小心删了
@@ -107,6 +107,34 @@
 1. Accounts Settings -> Organizations -> Create new Organizations 新建一个组织, 并添加项目成员。
 2. 新建一个Repository ->  进入Repository的Settings -> Collaborators -> 在Teams下面点击刚创建的组织: 比如my-organize/owners 添加或者remove组织成员. 组织的所有者可以针对不同的代码仓库建立不同访问权限的团队。
 
+## 清理.git大文件和历史库
+### 常规办法
+1. 删除无用的分支
+$ git branch -d <branch_name>
+2. 删除无用的tag
+$ git tag -d <tag_name>
+3. 清理本地版本库
+$ git gc --prune=now
+
+### 高级办法
+> 注意高级办法会导致push冲突，需要强制提交，其他人pull也会遇到冲突，建议重新克隆
+
+1. 完全重建版本库
+$ rm -rf .git
+$ git init
+$ git add .
+$ git cm "first commit"
+$ git remote add origin <your_github_repo_url>
+$ git push -f -u origin master
+
+2. 有选择性的合并历史提交
+> https://www.zhihu.com/question/29769130/answer/45546231
+
+$ git rebase -i <first_commit>
+将想合并的提交的pick改成s,这样第四个提交就会合并进入第三个提交。等合并完提交之后再运行:
+$ git push -f
+$ git gc --prune=now
+
 ## reference:
 * https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/001375840038939c291467cc7c747b1810aab2fb8863508000
 * http://www.runoob.com/w3cnote/git-guide.html
@@ -115,3 +143,4 @@
 * http://xiaocong.githubio/blog/2013/03/20/team-collaboration-with-github/
 * http://blog.leezhong.com/tech/2011/02/25/git-workflow-with-blog-demohtml
 * http://www.yangzhiping.com/tech/github.html#q1
+* https://www.zhihu.com/question/29769130
