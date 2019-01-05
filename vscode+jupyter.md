@@ -9,6 +9,8 @@
 [shortcuts frequent](https://www.zhihu.com/question/37623310) </br>
 [shortcuts pdf for mac os](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf) </br>
 
+1. convert to upper: ctrl+shift+U
+1. convert to lower: ctrl+shift+L
 1. cmd+shift+p, >python: select interpreter #choisir version de python
 2. cmd+shift+O #tout les symbols
 3. ctrl+cliquer function/variable/symboles
@@ -35,6 +37,7 @@
 4. LaTex Workshop, cmd+shift+p -> latex workshop view latex in new tab
 4. Path Intellisense, utilise: quand on tape "./../"
 4. output colorizer
+5. sftp: cmd+shift+p -> sftp
 4. Settings Sync, Upload Key : Shift + Alt + U , Download Key : Shift + Alt + D
 
 ## jupyter dans VS Code:
