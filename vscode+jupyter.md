@@ -20,7 +20,9 @@
 4. column selection: opt+鼠标点选; opt+shift+鼠标点选或拖动; cmd+opt+上下键，然后shift+左右
 8. opt+上下: 交换行
 4. opt+左右: 光标按单词移动, cmd+左右:光标到行首行末
-4. cmd+f 查找 opt+cmd+f: 替换
+4. cmd+f: 查找 opt+cmd+f: 替换
+5. opt+cmd+左右: 在tab中切换
+6. ctl+-,ctl+shift+-: navigate back, navigate forward
 
 
 ## installer des plugins:
