@@ -44,6 +44,13 @@ batch_transitions = batch_transitions.flatten(1)
 batch_transitions.gather(-1, (label_ids[:, t]*self.num_labels+label_ids[:, t-1]).view(-1,1)) + feats[:, t].gather(-1, label_ids[:, t].view(-1,1)).view(-1,1)
 ```
 
+#### 释放GPU显存
+```
+del some_object
+torch.cuda.empty_cache()
+```
+
+
 
 ## Numpy
 
