@@ -13,10 +13,13 @@
 * git add -u #Stages Modified & Deleted But Without New
 * git commit -m "new file and rename file" 或 git cm "first commit"
 * git status
+* rm readme.md # 不小心删了
+  - git checkout readme.md
 * git push # 上传到github
 * git pull # 把github的库的内容更新下来
-* rm readme.md # 不小心删了
-* git checkout readme.md
+* <b>建项目的通常步骤</b>：
+  - 在github上建好一个项目, **本地根目录(要存放项目目录的上级目录)下** 运行: git clone git@github.com:Louis-udm/savoir-jupyter.git
+  - 可以改本地的项目目录名称，不影响github的项目名称
 
 
 ### git client
