@@ -59,7 +59,7 @@ Trim Trailing Whitespace
   "python.linting.flake8Path": "/Users/louis/anaconda3/envs/py37/bin/flake8",
   "python.linting.flake8Args": [
     "--max-line-length=160",
-    "--ignore=E265,E402,F401,E302,E305,F403,W291,E128,E303,  E225,E226,E231"
+    "--ignore=E265,E402,F401,E302,E305,F403,W291,E128,E303,E116,E126,E301,E228,E262,E201,E202,F811,E261,E127  E225,E226,E231",
     "--max-complexity=12"
   ],
 ```
@@ -117,7 +117,7 @@ menu->code->preference->raccoucis, add:
   "python.linting.flake8Path": "/Users/louis/anaconda3/envs/py37/bin/flake8",
   "python.linting.flake8Args": [
     "--max-line-length=160",
-    "--ignore=E265,E402,F401,E302,E305,F403,W291,E128,E303,  E225,E226,E231",
+    "--ignore=E265,E402,F401,E302,E305,F403,W291,E128,E303,E116,E126,E301,E228,E262,E201,E202,F811,E261,E127  E225,E226,E231",
     "--max-complexity=12"
   ],
 
