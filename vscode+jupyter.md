@@ -59,7 +59,7 @@ Trim Trailing Whitespace
   "python.linting.flake8Path": "/Users/louis/anaconda3/envs/py37/bin/flake8",
   "python.linting.flake8Args": [
     "--max-line-length=160",
-    "--ignore=E265,E402,F401,E302,E305,F403,W291,E128,E303,E116,E126,E301,E228,E262,E201,E202,F811,E261,E127  E225,E226,E231",
+    "--ignore=F401,  E265,E402,E302,E305,F403,W291,E128,E303,E116,E126,E301,E228,E262,E201,E202,F811,E261,E127,E241,  E225,E226,E231",
     "--max-complexity=12"
   ],
 ```
@@ -97,7 +97,7 @@ menu->code->preference->raccoucis, add:
     { "key": "ctrl+opt+shift+h",      "command": "topper.addTopHeader.personalProfile",
         "when": "editorTextFocus"}
 
-## settings.json
+## settings.json for others:
 ```
   "files.autoSave": "off",
   "explorer.confirmDelete": false,
@@ -108,18 +108,6 @@ menu->code->preference->raccoucis, add:
   "python.condaPath": "/Users/louis/anaconda3/condabin/conda",
   "python.venvPath": "/Users/louis/anaconda3/envs/",
   "python.pythonPath": "/Users/louis/anaconda3/envs/py37/bin/python",
-
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": false,
-  // pep8Enabled or flake8Enabled
-  "python.linting.pep8Enabled": false,
-  "python.linting.flake8Enabled": true,
-  "python.linting.flake8Path": "/Users/louis/anaconda3/envs/py37/bin/flake8",
-  "python.linting.flake8Args": [
-    "--max-line-length=160",
-    "--ignore=E265,E402,F401,E302,E305,F403,W291,E128,E303,E116,E126,E301,E228,E262,E201,E202,F811,E261,E127  E225,E226,E231",
-    "--max-complexity=12"
-  ],
 
   "files.exclude": {
     "**/.git": true,
