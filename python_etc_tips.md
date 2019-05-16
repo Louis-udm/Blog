@@ -77,7 +77,7 @@ A=torch.tensor([[1., 2.], [ 5.,  6.],[ 7.,  8.]])
 A[:,[0,2,1,0,0]]
 ```
 
-### 2d matrix, ind指示各行的特定列，选出ind指定的这些元素:
+#### 2d matrix, ind指示各行的特定列，选出ind指定的这些元素:
 ```
 # method1:
 A=torch.randn(5,6)
