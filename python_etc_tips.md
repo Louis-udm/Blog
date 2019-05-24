@@ -97,7 +97,18 @@ del some_object
 torch.cuda.empty_cache()
 ```
 
+#### torch.Tensor(np.array), torch.tensor(np.array,dtype=torch.float64), torch.from_numpy(np.array)
+- torch.tensor()会拷贝（而不是直接引用）; torch.tensor(np.array).to(device),会在新建的时候先拷贝到内存，然后移到device后删了内存空间
+- torch.Tensor()通常就是torch.FloatTensor(), 共享原数据的内存,但使用float32,所以当同原数据类型不一致时，就会拷贝出新的内存空间
+- torch.from_numpy() 共享原数据内存，并使用**同原数据一致的数据类型**, 比如numpy.float64->torch.DoubleTensor; torch.from_numpy(np.array).to(device)，直接把已有数据移到device并删了原数据的内存空间
 
+#### [torch.dtype](https://pytorch.org/docs/stable/tensors.html):
+- float=float32
+- double=float64
+- half=float16
+- uint8, int8, short=int16, int=int32, long=int64
+不同数据格式占据的内存或显存大小不同,float64占8字节,float32占4字节
+一个float32的matrix的内存占用:(shape[0]*shape[1]*4)/(1024**3) G
 
 ## Numpy
 
