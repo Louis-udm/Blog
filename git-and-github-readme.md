@@ -43,15 +43,27 @@
 * 接着add，commit等操作即可
 
 
-### 创建分支
+### [branch](https://www.runoob.com/git/git-branch.html) 分支
+* git branch_name #创建分支
 * git checkout -b dev
 * git branch #查看当前分支
-* git checkout master #切换回master分支
+* git branch -r #查看远程分支
+* git branch -a #查看所有
+* git checkout branch_name/master #切换branch_name/master分支
 * git diff <source_branch> <target_branch> #在合并改动之前，你可以使用如下命令预览差异
 * git merge dev #合并, 如果有冲突，手工解决，再用git add 解决后文件 & git commit -m
 * git log --graph --pretty=oneline --abbrev-commit
 * git branch -d feature1
 * [git stash #将现在的工作现场“储藏”起来, 去修改bug](https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137602359178794d966923e5c4134bc8bf98dfb03aea3000)
+* git checkout origin/branch_name 可以切换到这个分支，然后git pull 可以更新这个分支
+* 注意当git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git. depth用于指定克隆深度，为1即表示只克隆最近一次commit，但它也只是clone了master. 为了获得其他分支，补救办法：[git clone --depth=1时的一些问题](https://www.jianshu.com/p/1031dd2a6c3a)
+```
+$git clone --depth 1 https://github.com/dogescript/xxxxxxx.git
+$ git remote set-branches origin 'remote_branch_name'
+$ git fetch --depth 1 origin remote_branch_name
+$ git checkout remote_branch_name
+```
+
 
 ### 标签
 * git checkout master #确定要做哪个分支打标签

@@ -60,6 +60,11 @@ batch_transitions = batch_transitions.flatten(1)
 batch_transitions.gather(-1, (label_ids[:, t]*self.num_labels+label_ids[:, t-1]).view(-1,1)) + feats[:, t].gather(-1, label_ids[:, t].view(-1,1)).view(-1,1)
 ```
 
+#### 大规模Identity 用pytorch的dropout会出现这个错:
+```
+Intel MKL ERROR: Parameter 3 was incorrect on entry to viRngBernoulli.
+```
+
 #### 一个3d tensor, shape=5,3,8，给定一个序列比如3,2,7,0,5表示这个tensor中的逐个2d Matrix中对应的列，比如第一个数字3表示第一个matrix的第3列，如何不用for循环把序列对应的各列选出来？
 ```
 ind=torch.tensor([3,2,7,0,5]).long() #列号
@@ -102,7 +107,7 @@ torch.cuda.empty_cache()
 - torch.Tensor()通常就是torch.FloatTensor(), 共享原数据的内存,但使用float32,所以当同原数据类型不一致时，就会拷贝出新的内存空间
 - torch.from_numpy() 共享原数据内存，并使用**同原数据一致的数据类型**, 比如numpy.float64->torch.DoubleTensor; torch.from_numpy(np.array).to(device)，直接把已有数据移到device并删了原数据的内存空间
 
-#### [torch.dtype](https://pytorch.org/docs/stable/tensors.html):
+#### [torch.dtype和内存](https://pytorch.org/docs/stable/tensors.html):
 - float=float32
 - double=float64
 - half=float16
@@ -110,7 +115,92 @@ torch.cuda.empty_cache()
 不同数据格式占据的内存或显存大小不同,float64占8字节,float32占4字节
 一个float32的matrix的内存占用:(shape[0]*shape[1]*4)/(1024**3) G
 
+#### torch.sparse
+- torch_sparse_tensor.mm/matmul(dense_tensor).is_sparse=False
+
+- squeeze sparse:
+```
+# adj是一个大的sparse，X和Ha是batch x row x dim, 并为0的行号相同
+def squeeze_sparse(adj,X,Ha,device):
+    N=adj.shape[0]
+    batch_size=X.shape[0]
+    edge=adj._indices()
+    values=adj._values()
+    seq=torch.arange(N).to(device)
+    valid_col=torch.zeros(edge.shape[1],dtype=torch.uint8).to(device)
+    # seq=seq.repeat(batch_size).view(batch_size,-1)
+    # new_edges=[]
+    sp_list=[]
+    restore_ids_list=[]
+    x_list=[]
+    edge_h_list=[]
+    Ha_list=[]
+    for i in range(batch_size):
+        x_list.append(X[i][(X[i]!=0).sum(-1)!=0,:])
+        Ha_list.append(Ha[i][(X[i]!=0).sum(-1)!=0,:])
+        valid_ids=seq[(X[i]!=0).sum(-1)!=0]
+        empty_ids=seq[(X[i]!=0).sum(-1)==0]
+        valid_col*=0
+        # 根据adj.X，为0的x会导致对应的adj的列失效，所以将adj中的失效列去除
+        # adj的失效列去除后，部分行也会变为失效。但失效的行会少于失效的列
+        valid_col = edge[1][np.where(np.isin(edge[1],valid_ids))]
+        # valid_col*=0
+        # for vid in valid_ids:
+        #     valid_col += edge[1]==vid
+        new_edge=edge[:,valid_col].clone()
+        edge_h_list.append(torch.cat((Ha[i][new_edge[0],:], Ha[i][new_edge[1],:]), dim=-1))
+        new_values=values[valid_col].clone()
+        # 用于压缩的adj.X后，恢复回vocab大小的串，记录下有效的行的号码
+        restore_ids=new_edge[0].unique(sorted=True)
+        restore_ids_list.append(restore_ids)
+        # 压缩有效列的号码
+        for i in range(new_edge.shape[1]):
+            new_edge[1][i]=new_edge[1][i]-(empty_ids<new_edge[1][i]).sum()
+        #压缩有效行的号码。失效的行会少于失效的列
+        row_empty_ids=torch.LongTensor(list(set(empty_ids.tolist())-set(restore_ids.tolist()))).to(device)
+        for i in range(new_edge.shape[1]):
+            new_edge[0][i]=new_edge[0][i]-(row_empty_ids<new_edge[0][i]).sum()
+        sp_list.append(torch.sparse.FloatTensor(new_edge,new_values).to(device))
+    return sp_list,x_list,Ha_list,edge_h_list,restore_ids_list
+```
+
 ## Numpy
+
+#### 选出数组中特定的几个值
+```
+a=torch.LongTensor([0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6])
+b=torch.LongTensor([0, 2, 4, 5]) 一个set
+# 要根据b，从a中获得c=tensor([0,0,0,2,2,4,4,5,5])
+a[np.where(np.isin(a,b))]
+```
+
+#### [scipy.sparse](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html)
+```
+# lil的sparse:
+lil.rows: 有多少行就有多少个list,每个list代表该行非零的列
+lil.rows=array([list([0, 2]), list([2]), list([0, 1, 2])], dtype=object)
+
+# coo方式最简单:
+csr_matrix((data, (row, col)), shape=(3, 3)).toarray()
+array([[1, 0, 2],
+
+# scr方式
+indptr = np.array([0, 2, 3, 6]) 值对应indices的下标，指示每行在indices的区域, 0行[0:2],1行[2:3],2行[3:6]
+indices = np.array([0, 2, 2, 0, 1, 2]) 值代表着在indptre划分下，每行非零的列
+data = np.array([1, 2, 3, 4, 5, 6])
+csr_matrix((data, indices, indptr), shape=(3, 3)).toarray()
+array([[1, 0, 2],
+       [0, 0, 3],
+       [4, 5, 6]])
+```
+
+## pandas
+
+#### How to shuffle a dataframe:
+```
+from sklearn.utils import shuffle
+df = shuffle(df)
+```
 
 ## OpenCV
 
