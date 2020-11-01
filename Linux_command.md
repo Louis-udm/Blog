@@ -96,6 +96,9 @@ $ seq 5 |awk '$1>2 {print $1; print $1*$1}' #对产生的1~5，只打印>2的
 ~ ~! 匹配正则表达式和不匹配正则表达式
 $ awk 'BEGIN{a="100testa";if(a ~ /^100*/){print "ok";}}'
 
+#sum the line '1 2 3', and result=6 (注意下面这个的结果是6，不是"123")
+$ echo "1 2 3" | awk '{for (i=1; i<=NF; i++) s=s+$i};END {print s}'
+
 ```
 
 
@@ -153,8 +156,8 @@ exemples:
 替换操作：s命令
 正则表达式 \w\+ 匹配每一个单词，使用 [&] 替换它，& 对应于之前所匹配到的单词：
 echo this is a test line | sed 's/\w\+/[&]/g'
-删除空白行
-sed '/^$/d' file
+删除空白行(To permanently remove empty lines from a file called textfile)
+sed -i '/^$/d' textfile
 ```
 
 ### bc :bc命令是一种支持任意精度的交互执行的计算器语言
